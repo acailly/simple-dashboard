@@ -1,6 +1,7 @@
 //https://docs.google.com/spreadsheets/d/1kfBUqXFsV3wVq9wxhvj7169YGT04BZE6IaGIKClWwXg/edit#gid=0
 
-const key = "1kfBUqXFsV3wVq9wxhvj7169YGT04BZE6IaGIKClWwXg";
+const defaultKey = "1kfBUqXFsV3wVq9wxhvj7169YGT04BZE6IaGIKClWwXg";
+const key = window.location.hash.substr(1) || defaultKey;
 
 window.onload = renderDashboardWithKey(key);
 
@@ -15,7 +16,7 @@ function renderDashboardWithKey(key) {
 
 function renderDashboard(key, rootDiv) {
   return function(messages) {
-    rootDiv.appendChild(renderHeader(key));
+    rootDiv.appendChild(renderHeader(key)(messages));
     rootDiv.appendChild(renderMainSection(messages));
 
     return rootDiv;
@@ -23,41 +24,50 @@ function renderDashboard(key, rootDiv) {
 }
 
 function renderHeader(key) {
-  const rootDiv = document.createElement("header");
+  return function(messages) {
+    const rootDiv = document.createElement("header");
 
-  const logo = document.createElement("img");
-  logo.src = "logo.png";
-  logo.alt = "Dashboard logo";
-  rootDiv.appendChild(logo);
+    const logo = document.createElement("img");
+    logo.src = "logo.png";
+    logo.alt = "Dashboard logo";
+    rootDiv.appendChild(logo);
 
-  const title = document.createElement("h1");
-  const titleText = document.createTextNode("Mon Dashboard");
-  title.appendChild(titleText);
-  rootDiv.appendChild(title);
+    const title = document.createElement("h1");
+    const titleText = document.createTextNode(getDashboardTitle(messages));
+    title.appendChild(titleText);
+    rootDiv.appendChild(title);
 
-  const subtitle = document.createElement("p");
-  const linkToSpreadsheet = document.createElement("a");
-  linkToSpreadsheet.href = getSpreadsheetUrl(key);
-  linkToSpreadsheet.target = "_blank";
-  const linkToSpreadsheetText = document.createTextNode("Editer les données");
-  linkToSpreadsheet.appendChild(linkToSpreadsheetText);
-  subtitle.appendChild(linkToSpreadsheet);
-  rootDiv.appendChild(subtitle);
+    const subtitle = document.createElement("p");
+    const linkToSpreadsheet = document.createElement("a");
+    linkToSpreadsheet.href = getSpreadsheetUrl(key);
+    linkToSpreadsheet.target = "_blank";
+    const linkToSpreadsheetText = document.createTextNode("Editer les données");
+    linkToSpreadsheet.appendChild(linkToSpreadsheetText);
+    subtitle.appendChild(linkToSpreadsheet);
+    rootDiv.appendChild(subtitle);
 
-  return rootDiv;
+    return rootDiv;
 
-  function getSpreadsheetUrl(key) {
-    return "https://docs.google.com/spreadsheets/d/" + key + "/edit#gid=0";
-  }
+    function getSpreadsheetUrl(key) {
+      return "https://docs.google.com/spreadsheets/d/" + key + "/edit#gid=0";
+    }
+
+    function getDashboardTitle(messages) {
+      const titleMessage = messages.find(keepMessagesOfType("title"));
+      if (!titleMessage || !titleMessage.content) return "< Pas de titre >";
+
+      return titleMessage.content;
+    }
+  };
 }
 
 function renderMainSection(messages) {
   const rootDiv = document.createElement("main");
 
-  rootDiv.appendChild(renderAllMessagesOfType("News")(messages));
-  rootDiv.appendChild(renderAllMessagesOfType("A venir")(messages));
-  rootDiv.appendChild(renderAllMessagesOfType("En cours")(messages));
-  rootDiv.appendChild(renderAllMessagesOfType("Entretien")(messages));
+  rootDiv.appendChild(renderAllMessagesOfType("news")(messages));
+  rootDiv.appendChild(renderAllMessagesOfType("future")(messages));
+  rootDiv.appendChild(renderAllMessagesOfType("ongoing")(messages));
+  rootDiv.appendChild(renderAllMessagesOfType("recruitment")(messages));
 
   return rootDiv;
 }
@@ -67,7 +77,9 @@ function renderAllMessagesOfType(messageType) {
     const rootDiv = document.createElement("div");
 
     const title = document.createElement("h2");
-    const titleText = document.createTextNode(messageType);
+    const titleText = document.createTextNode(
+      findTitleForMessageType(messageType)(messages)
+    );
     title.appendChild(titleText);
     rootDiv.appendChild(title);
 
@@ -77,9 +89,14 @@ function renderAllMessagesOfType(messageType) {
 
     return rootDiv;
 
-    function keepMessagesOfType(messageType) {
-      return function(message) {
-        return message.type === messageType;
+    function findTitleForMessageType(messageType) {
+      return function(messages) {
+        const titleMessage = messages.find(
+          keepMessagesOfType(messageType + ".title")
+        );
+        if (!titleMessage || !titleMessage.content) return messageType;
+
+        return titleMessage.content;
       };
     }
   };
@@ -87,12 +104,33 @@ function renderAllMessagesOfType(messageType) {
 
 function renderMessage(rootDiv) {
   return function(message) {
-    const newDiv = document.createElement("div");
-    const newContent = document.createTextNode(
-      message.type + " - " + message.content + " (" + message.date + ")"
-    );
-    newDiv.appendChild(newContent);
-    rootDiv.appendChild(newDiv);
+    const messageParagraph = document.createElement("p");
+
+    const contentDiv = document.createElement("div");
+    const contentDivText = document.createTextNode("⭐ " + message.content);
+    contentDiv.appendChild(contentDivText);
+    messageParagraph.appendChild(contentDiv);
+
+    if (message.url) {
+      const urlDiv = document.createElement("div");
+      const urlDivText = document.createTextNode("🔗 ");
+      urlDiv.appendChild(urlDivText);
+      const urlLink = document.createElement("a");
+      urlLink.href = message.url;
+      urlLink.target = "_blank";
+      const urlLinkText = document.createTextNode(message.url);
+      urlLink.appendChild(urlLinkText);
+      urlDiv.appendChild(urlLink);
+      messageParagraph.appendChild(urlDiv);
+    }
+
+    rootDiv.appendChild(messageParagraph);
+  };
+}
+
+function keepMessagesOfType(messageType) {
+  return function(message) {
+    return message.type === messageType;
   };
 }
 
@@ -104,7 +142,7 @@ function getMessagesFromJson(json) {
 
     Object.keys(entry).forEach(function(key) {
       if (/gsx\$/.test(key)) {
-        let newKey = key.replace("gsx$", "");
+        const newKey = key.replace("gsx$", "");
         message[newKey] = entry[key]["$t"];
       }
     });
