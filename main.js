@@ -1,92 +1,131 @@
 //https://docs.google.com/spreadsheets/d/1kfBUqXFsV3wVq9wxhvj7169YGT04BZE6IaGIKClWwXg/edit#gid=0
 
 const key = "1kfBUqXFsV3wVq9wxhvj7169YGT04BZE6IaGIKClWwXg";
-renderDashboardWithKey(key)
+
+window.onload = renderDashboardWithKey(key);
 
 function renderDashboardWithKey(key) {
-  Promise.resolve()
-    .then(getJsonFromGoogleSheet(key))
-    .then(getMessagesFromJson)
-    .then(renderAllMessages)
-    .then(appendToBody)
+  return function() {
+    Promise.resolve()
+      .then(getJsonFromGoogleSheet(key))
+      .then(getMessagesFromJson)
+      .then(renderDashboard(key, document.body));
+  };
 }
 
-function appendToBody(element) {
-  document.body.appendChild(element)
+function renderDashboard(key, rootDiv) {
+  return function(messages) {
+    rootDiv.appendChild(renderHeader(key));
+    rootDiv.appendChild(renderMainSection(messages));
+
+    return rootDiv;
+  };
 }
 
-function renderAllMessages(messages) {
-  const rootDiv = document.createElement('div')
+function renderHeader(key) {
+  const rootDiv = document.createElement("header");
 
-  rootDiv.appendChild(renderAllMessagesOfType('News')(messages))
-  rootDiv.appendChild(renderAllMessagesOfType('A venir')(messages))
-  rootDiv.appendChild(renderAllMessagesOfType('En cours')(messages))
-  rootDiv.appendChild(renderAllMessagesOfType('Entretien')(messages))
+  const logo = document.createElement("img");
+  logo.src = "logo.png";
+  logo.alt = "Dashboard logo";
+  rootDiv.appendChild(logo);
 
-  return rootDiv
+  const title = document.createElement("h1");
+  const titleText = document.createTextNode("Mon Dashboard");
+  title.appendChild(titleText);
+  rootDiv.appendChild(title);
+
+  const subtitle = document.createElement("p");
+  const linkToSpreadsheet = document.createElement("a");
+  linkToSpreadsheet.href = getSpreadsheetUrl(key);
+  linkToSpreadsheet.target = "_blank";
+  const linkToSpreadsheetText = document.createTextNode("Editer les données");
+  linkToSpreadsheet.appendChild(linkToSpreadsheetText);
+  subtitle.appendChild(linkToSpreadsheet);
+  rootDiv.appendChild(subtitle);
+
+  return rootDiv;
+
+  function getSpreadsheetUrl(key) {
+    return "https://docs.google.com/spreadsheets/d/" + key + "/edit#gid=0";
+  }
+}
+
+function renderMainSection(messages) {
+  const rootDiv = document.createElement("main");
+
+  rootDiv.appendChild(renderAllMessagesOfType("News")(messages));
+  rootDiv.appendChild(renderAllMessagesOfType("A venir")(messages));
+  rootDiv.appendChild(renderAllMessagesOfType("En cours")(messages));
+  rootDiv.appendChild(renderAllMessagesOfType("Entretien")(messages));
+
+  return rootDiv;
 }
 
 function renderAllMessagesOfType(messageType) {
-  return function (messages) {
+  return function(messages) {
+    const rootDiv = document.createElement("div");
 
-    const rootDiv = document.createElement('div')
-
-    const title = document.createElement('h2')
+    const title = document.createElement("h2");
     const titleText = document.createTextNode(messageType);
     title.appendChild(titleText);
-    rootDiv.appendChild(title)
+    rootDiv.appendChild(title);
 
     messages
       .filter(keepMessagesOfType(messageType))
-      .forEach(renderMessage(rootDiv))
+      .forEach(renderMessage(rootDiv));
 
-    return rootDiv
+    return rootDiv;
 
     function keepMessagesOfType(messageType) {
-      return function (message) {
-        return message.type === messageType
-      }
+      return function(message) {
+        return message.type === messageType;
+      };
     }
-  }
+  };
 }
 
 function renderMessage(rootDiv) {
-  return function (message) {
+  return function(message) {
     const newDiv = document.createElement("div");
-    const newContent = document.createTextNode(message.type + ' - ' + message.content + ' (' + message.date + ')');
+    const newContent = document.createTextNode(
+      message.type + " - " + message.content + " (" + message.date + ")"
+    );
     newDiv.appendChild(newContent);
-    rootDiv.appendChild(newDiv)
-  }
+    rootDiv.appendChild(newDiv);
+  };
 }
 
 function getMessagesFromJson(json) {
-  const messages = json.feed.entry.map(function (entry) {
+  const messages = json.feed.entry.map(function(entry) {
     const message = {
-      "updated": entry.updated["$t"]
-    }
+      updated: entry.updated["$t"]
+    };
 
-    Object.keys(entry).forEach(function (key) {
+    Object.keys(entry).forEach(function(key) {
       if (/gsx\$/.test(key)) {
         let newKey = key.replace("gsx$", "");
         message[newKey] = entry[key]["$t"];
       }
-    })
+    });
 
     return message;
-  })
+  });
 
-  return messages
+  return messages;
 }
 
 function getJsonFromGoogleSheet(key) {
-  return function () {
-    const url = "https://spreadsheets.google.com/feeds/list/" + key + "/od6/public/values?alt=json";
+  return function() {
+    const url =
+      "https://spreadsheets.google.com/feeds/list/" +
+      key +
+      "/od6/public/values?alt=json";
 
-    return fetch(url)
-      .then(responseToJson)
+    return fetch(url).then(responseToJson);
 
     function responseToJson(res) {
-      return res.json()
+      return res.json();
     }
-  }
+  };
 }
