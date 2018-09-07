@@ -34,11 +34,20 @@ function renderHeader(key) {
   return function(messages) {
     const rootDiv = document.createElement("header");
 
+    setHeaderBackgroundImage(rootDiv)(messages);
+
     rootDiv.appendChild(renderHeaderLogo(messages));
     rootDiv.appendChild(renderHeaderTitle(messages));
     rootDiv.appendChild(renderHeaderButton());
 
     return rootDiv;
+  };
+}
+
+function setHeaderBackgroundImage(headerDiv) {
+  return function(messages) {
+    const headerBackgroundImage = getHeaderBackgroundImage(messages);
+    headerDiv.style.backgroundImage = "url(" + headerBackgroundImage + ")";
   };
 }
 
@@ -141,7 +150,9 @@ function renderMessage(rootDiv) {
 }
 
 function getHeaderBackgroundImage(messages) {
-  const logoMessage = messages.find(keepMessagesOfType("header.logo"));
+  const logoMessage = messages.find(
+    keepMessagesOfType("header.backgroundImage")
+  );
   if (!logoMessage || !logoMessage.url) return "logo.png";
 
   return logoMessage.url;
