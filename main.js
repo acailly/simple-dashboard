@@ -85,10 +85,11 @@ function getSpreadsheetUrl(key) {
 function renderMainSection(messages) {
   const rootDiv = document.createElement("main");
 
-  rootDiv.appendChild(renderAllMessagesOfType("news")(messages));
-  rootDiv.appendChild(renderAllMessagesOfType("future")(messages));
-  rootDiv.appendChild(renderAllMessagesOfType("ongoing")(messages));
-  rootDiv.appendChild(renderAllMessagesOfType("recruitment")(messages));
+  const sectionTypes = getSectionTypes(messages);
+
+  sectionTypes.forEach(function(sectionType) {
+    rootDiv.appendChild(renderAllMessagesOfType(sectionType)(messages));
+  });
 
   return rootDiv;
 }
@@ -178,6 +179,23 @@ function keepMessagesOfType(messageType) {
   };
 }
 
+function getSectionTypes(messages) {
+  const sectionTitleMessages = messages
+    .filter(keepMessagesOfTypeMatching(/\.title$/))
+    .filter(reverse(keepMessagesOfType("header.title")));
+  const sectionTypes = sectionTitleMessages.map(function(message) {
+    return message.type.slice(0, -".title".length);
+  });
+
+  return sectionTypes;
+}
+
+function keepMessagesOfTypeMatching(regex) {
+  return function(message) {
+    return regex.test(message.type);
+  };
+}
+
 function getMessagesFromJson(json) {
   const messages = json.feed.entry.map(function(entry) {
     const message = {
@@ -209,5 +227,11 @@ function getJsonFromGoogleSheet(key) {
     function responseToJson(res) {
       return res.json();
     }
+  };
+}
+
+function reverse(func) {
+  return function() {
+    return !func.apply(this, arguments);
   };
 }
