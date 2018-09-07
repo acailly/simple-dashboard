@@ -131,14 +131,14 @@ function renderMessage(rootDiv) {
 }
 
 function getDashboardLogo(messages) {
-  const logoMessage = messages.find(keepMessagesOfType("logo"));
+  const logoMessage = messages.find(keepMessagesOfType("header.logo"));
   if (!logoMessage || !logoMessage.url) return "logo.png";
 
   return logoMessage.url;
 }
 
 function getDashboardTitle(messages) {
-  const titleMessage = messages.find(keepMessagesOfType("title"));
+  const titleMessage = messages.find(keepMessagesOfType("header.title"));
   if (!titleMessage || !titleMessage.content) return "< Pas de titre >";
 
   return titleMessage.content;
