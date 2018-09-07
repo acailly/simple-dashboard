@@ -26,7 +26,7 @@ function renderDashboard(key, rootDiv) {
 }
 
 function setPageTitle(messages) {
-  const title = getDashboardTitle(messages);
+  const title = getHeaderTitle(messages);
   document.title = title;
 }
 
@@ -34,33 +34,43 @@ function renderHeader(key) {
   return function(messages) {
     const rootDiv = document.createElement("header");
 
-    const dashboardLogo = getDashboardLogo(messages);
-    const logo = document.createElement("img");
-    logo.src = dashboardLogo;
-    logo.alt = "Dashboard logo";
-    rootDiv.appendChild(logo);
-
-    const dashboardTitle = getDashboardTitle(messages);
-    const title = document.createElement("h1");
-    const titleText = document.createTextNode(dashboardTitle);
-    title.appendChild(titleText);
-    rootDiv.appendChild(title);
-
-    const subtitle = document.createElement("p");
-    const linkToSpreadsheet = document.createElement("a");
-    linkToSpreadsheet.href = getSpreadsheetUrl(key);
-    linkToSpreadsheet.target = "_blank";
-    const linkToSpreadsheetText = document.createTextNode("Editer les données");
-    linkToSpreadsheet.appendChild(linkToSpreadsheetText);
-    subtitle.appendChild(linkToSpreadsheet);
-    rootDiv.appendChild(subtitle);
+    rootDiv.appendChild(renderHeaderLogo(messages));
+    rootDiv.appendChild(renderHeaderTitle(messages));
+    rootDiv.appendChild(renderHeaderButton());
 
     return rootDiv;
-
-    function getSpreadsheetUrl(key) {
-      return "https://docs.google.com/spreadsheets/d/" + key + "/edit#gid=0";
-    }
   };
+}
+
+function renderHeaderTitle(messages) {
+  const headerTitle = getHeaderTitle(messages);
+  const title = document.createElement("h1");
+  const titleText = document.createTextNode(headerTitle);
+  title.appendChild(titleText);
+  return title;
+}
+
+function renderHeaderLogo(messages) {
+  const headerLogo = getHeaderLogo(messages);
+  const logo = document.createElement("img");
+  logo.src = headerLogo;
+  logo.alt = "Dashboard logo";
+  return logo;
+}
+
+function renderHeaderButton() {
+  const subtitle = document.createElement("p");
+  const linkToSpreadsheet = document.createElement("a");
+  linkToSpreadsheet.href = getSpreadsheetUrl(key);
+  linkToSpreadsheet.target = "_blank";
+  const linkToSpreadsheetText = document.createTextNode("Editer les données");
+  linkToSpreadsheet.appendChild(linkToSpreadsheetText);
+  subtitle.appendChild(linkToSpreadsheet);
+  return subtitle;
+}
+
+function getSpreadsheetUrl(key) {
+  return "https://docs.google.com/spreadsheets/d/" + key + "/edit#gid=0";
 }
 
 function renderMainSection(messages) {
@@ -130,14 +140,21 @@ function renderMessage(rootDiv) {
   };
 }
 
-function getDashboardLogo(messages) {
+function getHeaderBackgroundImage(messages) {
   const logoMessage = messages.find(keepMessagesOfType("header.logo"));
   if (!logoMessage || !logoMessage.url) return "logo.png";
 
   return logoMessage.url;
 }
 
-function getDashboardTitle(messages) {
+function getHeaderLogo(messages) {
+  const logoMessage = messages.find(keepMessagesOfType("header.logo"));
+  if (!logoMessage || !logoMessage.url) return "logo.png";
+
+  return logoMessage.url;
+}
+
+function getHeaderTitle(messages) {
   const titleMessage = messages.find(keepMessagesOfType("header.title"));
   if (!titleMessage || !titleMessage.content) return "< Pas de titre >";
 
