@@ -16,6 +16,8 @@ function renderDashboardWithKey(key) {
 
 function renderDashboard(key, rootDiv) {
   return function(messages) {
+    setPageTitle(messages);
+
     rootDiv.appendChild(renderHeader(key)(messages));
     rootDiv.appendChild(renderMainSection(messages));
 
@@ -23,17 +25,24 @@ function renderDashboard(key, rootDiv) {
   };
 }
 
+function setPageTitle(messages) {
+  const title = getDashboardTitle(messages);
+  document.title = title;
+}
+
 function renderHeader(key) {
   return function(messages) {
     const rootDiv = document.createElement("header");
 
+    const dashboardLogo = getDashboardLogo(messages);
     const logo = document.createElement("img");
-    logo.src = "logo.png";
+    logo.src = dashboardLogo;
     logo.alt = "Dashboard logo";
     rootDiv.appendChild(logo);
 
+    const dashboardTitle = getDashboardTitle(messages);
     const title = document.createElement("h1");
-    const titleText = document.createTextNode(getDashboardTitle(messages));
+    const titleText = document.createTextNode(dashboardTitle);
     title.appendChild(titleText);
     rootDiv.appendChild(title);
 
@@ -50,13 +59,6 @@ function renderHeader(key) {
 
     function getSpreadsheetUrl(key) {
       return "https://docs.google.com/spreadsheets/d/" + key + "/edit#gid=0";
-    }
-
-    function getDashboardTitle(messages) {
-      const titleMessage = messages.find(keepMessagesOfType("title"));
-      if (!titleMessage || !titleMessage.content) return "< Pas de titre >";
-
-      return titleMessage.content;
     }
   };
 }
@@ -126,6 +128,20 @@ function renderMessage(rootDiv) {
 
     rootDiv.appendChild(messageParagraph);
   };
+}
+
+function getDashboardLogo(messages) {
+  const logoMessage = messages.find(keepMessagesOfType("logo"));
+  if (!logoMessage || !logoMessage.url) return "logo.png";
+
+  return logoMessage.url;
+}
+
+function getDashboardTitle(messages) {
+  const titleMessage = messages.find(keepMessagesOfType("title"));
+  if (!titleMessage || !titleMessage.content) return "< Pas de titre >";
+
+  return titleMessage.content;
 }
 
 function keepMessagesOfType(messageType) {
