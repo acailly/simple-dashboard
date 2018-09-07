@@ -167,7 +167,7 @@ function getHeaderLogo(messages) {
 
 function getHeaderTitle(messages) {
   const titleMessage = messages.find(keepMessagesOfType("header.title"));
-  if (!titleMessage || !titleMessage.content) return "< Pas de titre >";
+  if (!titleMessage || !titleMessage.content) return "[header.title]";
 
   return titleMessage.content;
 }
