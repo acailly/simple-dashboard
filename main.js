@@ -1,6 +1,6 @@
-//https://docs.google.com/spreadsheets/d/1kfBUqXFsV3wVq9wxhvj7169YGT04BZE6IaGIKClWwXg/edit#gid=0
+//https://docs.google.com/spreadsheets/d/1KFFj0SGfwvdiUNpbirtUFmk7foDsMCAM3cvkpVvo5Xo/edit#gid=0
 
-const defaultKey = "1kfBUqXFsV3wVq9wxhvj7169YGT04BZE6IaGIKClWwXg";
+const defaultKey = "1KFFj0SGfwvdiUNpbirtUFmk7foDsMCAM3cvkpVvo5Xo";
 const key = window.location.hash.substr(1) || defaultKey;
 
 window.onload = renderDashboardWithKey(key);
