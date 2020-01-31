@@ -129,8 +129,10 @@ function renderMessage(rootDiv) {
     const messageParagraph = document.createElement("p");
 
     const contentDiv = document.createElement("div");
-    const contentDivText = document.createTextNode("⭐ " + message.content);
+    let messageContent = message.content;
+    const contentDivText = document.createTextNode("⭐ " + messageContent);
     contentDiv.appendChild(contentDivText);
+    contentDiv.style = "white-space: pre;";
     messageParagraph.appendChild(contentDiv);
 
     if (message.url) {
