@@ -219,10 +219,12 @@ function getMessagesFromJson(json) {
 
 function getJsonFromGoogleSheet(key) {
   return function() {
-    const url =
-      "https://spreadsheets.google.com/feeds/list/" +
-      key +
-      "/od6/public/values?alt=json";
+    let url = "https://spreadsheets.google.com/feeds/list/";
+    url += key;
+    if (!key.includes("/")) {
+      url += "/1";
+    }
+    url += "/public/values?alt=json";
 
     return fetch(url).then(responseToJson);
 
