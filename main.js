@@ -79,7 +79,12 @@ function renderHeaderButton() {
 }
 
 function getSpreadsheetUrl(key) {
-  return "https://docs.google.com/spreadsheets/d/" + key + "/edit#gid=0";
+  const keyWithoutSheetIndex = key.split("/")[0];
+  return (
+    "https://docs.google.com/spreadsheets/d/" +
+    keyWithoutSheetIndex +
+    "/edit#gid=0"
+  );
 }
 
 function renderMainSection(messages) {
