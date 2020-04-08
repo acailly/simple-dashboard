@@ -54,8 +54,7 @@ function setHeaderBackgroundImage(headerDiv) {
 function renderHeaderTitle(messages) {
   const headerTitle = getHeaderTitle(messages);
   const title = document.createElement("h1");
-  const titleText = document.createTextNode(headerTitle);
-  title.appendChild(titleText);
+  title.innerHTML = headerTitle;
   return title;
 }
 
@@ -69,12 +68,11 @@ function renderHeaderLogo(messages) {
 
 function renderHeaderButton() {
   const subtitle = document.createElement("p");
-  const linkToSpreadsheet = document.createElement("a");
-  linkToSpreadsheet.href = getSpreadsheetUrl(key);
-  linkToSpreadsheet.target = "_blank";
-  const linkToSpreadsheetText = document.createTextNode("Editer les données");
-  linkToSpreadsheet.appendChild(linkToSpreadsheetText);
-  subtitle.appendChild(linkToSpreadsheet);
+
+  subtitle.innerHTML = `
+    <a href="${getSpreadsheetUrl(key)}" target="_blank">Editer les données</a>
+  `;
+
   return subtitle;
 }
 
@@ -128,26 +126,29 @@ function renderAllMessagesOfType(messageType) {
 
 function renderMessage(rootDiv) {
   return function (message) {
-    const messageParagraph = document.createElement("p");
+    const paragraphText = `
+      <div>
+        <span>⭐ </span> 
+        <span style="white-space: pre-wrap;">${message.content}</span>
+      </div>
+    `;
 
-    const contentDiv = document.createElement("div");
-    let messageContent = message.content;
-    contentDiv.innerHTML = "⭐ " + messageContent;
-    contentDiv.style = "white-space: pre-wrap;";
-    messageParagraph.appendChild(contentDiv);
-
+    let paragraphUrl = "";
     if (message.url) {
-      const urlDiv = document.createElement("div");
-      const urlDivText = document.createTextNode("🔗 ");
-      urlDiv.appendChild(urlDivText);
-      const urlLink = document.createElement("a");
-      urlLink.href = message.url;
-      urlLink.target = "_blank";
-      const urlLinkText = document.createTextNode(message.url);
-      urlLink.appendChild(urlLinkText);
-      urlDiv.appendChild(urlLink);
-      messageParagraph.appendChild(urlDiv);
+      paragraphUrl = `
+        <div>
+          🔗 <a href="${message.url}" target="_blank">
+            ${message.url}
+          </a>
+        </div>
+      `;
     }
+
+    const messageParagraph = document.createElement("p");
+    messageParagraph.innerHTML = `
+      ${paragraphText}
+      ${paragraphUrl}
+    `;
 
     rootDiv.appendChild(messageParagraph);
   };
