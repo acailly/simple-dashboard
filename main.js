@@ -104,10 +104,7 @@ function renderAllMessagesOfType(messageType) {
     const rootDiv = document.createElement("div");
 
     const title = document.createElement("h2");
-    const titleText = document.createTextNode(
-      findTitleForMessageType(messageType)(messages)
-    );
-    title.appendChild(titleText);
+    title.innerHTML = findTitleForMessageType(messageType)(messages);
     rootDiv.appendChild(title);
 
     messages
