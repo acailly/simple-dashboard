@@ -6,7 +6,7 @@ const key = window.location.hash.substr(1) || defaultKey;
 window.onload = renderDashboardWithKey(key);
 
 function renderDashboardWithKey(key) {
-  return function() {
+  return function () {
     Promise.resolve()
       .then(getJsonFromGoogleSheet(key))
       .then(getMessagesFromJson)
@@ -15,7 +15,7 @@ function renderDashboardWithKey(key) {
 }
 
 function renderDashboard(key, rootDiv) {
-  return function(messages) {
+  return function (messages) {
     setPageTitle(messages);
 
     rootDiv.appendChild(renderHeader(key)(messages));
@@ -31,7 +31,7 @@ function setPageTitle(messages) {
 }
 
 function renderHeader(key) {
-  return function(messages) {
+  return function (messages) {
     const rootDiv = document.createElement("header");
 
     setHeaderBackgroundImage(rootDiv)(messages);
@@ -45,7 +45,7 @@ function renderHeader(key) {
 }
 
 function setHeaderBackgroundImage(headerDiv) {
-  return function(messages) {
+  return function (messages) {
     const headerBackgroundImage = getHeaderBackgroundImage(messages);
     headerDiv.style.backgroundImage = "url(" + headerBackgroundImage + ")";
   };
@@ -92,7 +92,7 @@ function renderMainSection(messages) {
 
   const sectionTypes = getSectionTypes(messages);
 
-  sectionTypes.forEach(function(sectionType) {
+  sectionTypes.forEach(function (sectionType) {
     rootDiv.appendChild(renderAllMessagesOfType(sectionType)(messages));
   });
 
@@ -100,7 +100,7 @@ function renderMainSection(messages) {
 }
 
 function renderAllMessagesOfType(messageType) {
-  return function(messages) {
+  return function (messages) {
     const rootDiv = document.createElement("div");
 
     const title = document.createElement("h2");
@@ -117,7 +117,7 @@ function renderAllMessagesOfType(messageType) {
     return rootDiv;
 
     function findTitleForMessageType(messageType) {
-      return function(messages) {
+      return function (messages) {
         const titleMessage = messages.find(
           keepMessagesOfType(messageType + ".title")
         );
@@ -130,13 +130,12 @@ function renderAllMessagesOfType(messageType) {
 }
 
 function renderMessage(rootDiv) {
-  return function(message) {
+  return function (message) {
     const messageParagraph = document.createElement("p");
 
     const contentDiv = document.createElement("div");
     let messageContent = message.content;
-    const contentDivText = document.createTextNode("⭐ " + messageContent);
-    contentDiv.appendChild(contentDivText);
+    contentDiv.innerHTML = "⭐ " + messageContent;
     contentDiv.style = "white-space: pre-wrap;";
     messageParagraph.appendChild(contentDiv);
 
@@ -181,7 +180,7 @@ function getHeaderTitle(messages) {
 }
 
 function keepMessagesOfType(messageType) {
-  return function(message) {
+  return function (message) {
     return message.type === messageType;
   };
 }
@@ -190,7 +189,7 @@ function getSectionTypes(messages) {
   const sectionTitleMessages = messages
     .filter(keepMessagesOfTypeMatching(/\.title$/))
     .filter(reverse(keepMessagesOfType("header.title")));
-  const sectionTypes = sectionTitleMessages.map(function(message) {
+  const sectionTypes = sectionTitleMessages.map(function (message) {
     return message.type.slice(0, -".title".length);
   });
 
@@ -198,18 +197,18 @@ function getSectionTypes(messages) {
 }
 
 function keepMessagesOfTypeMatching(regex) {
-  return function(message) {
+  return function (message) {
     return regex.test(message.type);
   };
 }
 
 function getMessagesFromJson(json) {
-  const messages = json.feed.entry.map(function(entry) {
+  const messages = json.feed.entry.map(function (entry) {
     const message = {
-      updated: entry.updated["$t"]
+      updated: entry.updated["$t"],
     };
 
-    Object.keys(entry).forEach(function(key) {
+    Object.keys(entry).forEach(function (key) {
       if (/gsx\$/.test(key)) {
         const newKey = key.replace("gsx$", "");
         message[newKey] = entry[key]["$t"];
@@ -223,7 +222,7 @@ function getMessagesFromJson(json) {
 }
 
 function getJsonFromGoogleSheet(key) {
-  return function() {
+  return function () {
     let url = "https://spreadsheets.google.com/feeds/list/";
     url += key;
     if (!key.includes("/")) {
@@ -240,7 +239,7 @@ function getJsonFromGoogleSheet(key) {
 }
 
 function reverse(func) {
-  return function() {
+  return function () {
     return !func.apply(this, arguments);
   };
 }
